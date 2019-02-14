@@ -1708,7 +1708,11 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
     return ret;
 }
-
+/*
+ * av_read_frame - 新版本的ffmpeg用的是av_read_frame，而老版本的是av_read_packet
+ * 。区别是av_read_packet读出的是包，它可能是半帧或多帧，不保证帧的完整性。av_read_frame对
+ * av_read_packet进行了封装，使读出的数据总是完整的帧
+ */
 int av_read_frame(AVFormatContext *s, AVPacket *pkt)
 {
     const int genpts = s->flags & AVFMT_FLAG_GENPTS;
@@ -1717,6 +1721,10 @@ int av_read_frame(AVFormatContext *s, AVPacket *pkt)
     AVStream *st;
 
     if (!genpts) {
+		/*
+		 * 一般情况下会调用read_frame_internal(s, pkt)
+    	 * 直接返回
+		*/
         ret = s->internal->packet_buffer
               ? read_from_packet_buffer(&s->internal->packet_buffer,
                                         &s->internal->packet_buffer_end, pkt)
